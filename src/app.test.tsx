@@ -97,6 +97,30 @@ describe('App', () => {
     });
   });
 
+  it('shows Play again button after all cards drawn and resets on click', async () => {
+    const user = userEvent.setup();
+    mockShuffleDeck();
+    render(<App />);
+
+    await waitFor(() => expect(screen.getByText('Draw card')).toBeEnabled());
+
+    for (let i = 0; i < 52; i++) {
+      mockDrawCard('ACE', 'SPADES', 51 - i);
+      await user.click(screen.getByText('Draw card'));
+    }
+
+    await waitFor(() => {
+      expect(screen.getByText('Play again')).toBeInTheDocument();
+      expect(screen.queryByText('Draw card')).not.toBeInTheDocument();
+    });
+
+    mockShuffleDeck();
+    await user.click(screen.getByText('Play again'));
+
+    await waitFor(() => expect(screen.getByText('Draw card')).toBeEnabled());
+    expect(screen.queryByText('Play again')).not.toBeInTheDocument();
+  }, 30000);
+
   it('shows SNAP SUIT! when suits match', async () => {
     const user = userEvent.setup();
     mockShuffleDeck();
