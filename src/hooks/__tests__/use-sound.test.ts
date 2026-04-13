@@ -31,7 +31,9 @@ class MockAudioContext {
   currentTime = 0;
 }
 
-const AudioContextMock = vi.fn().mockImplementation(MockAudioContext);
+const AudioContextMock = vi.fn().mockImplementation(
+  () => new MockAudioContext(),
+);
 
 beforeEach(() => {
   vi.stubGlobal('AudioContext', AudioContextMock);
@@ -94,7 +96,7 @@ describe('useSound', () => {
   it('does not throw when AudioContext is unavailable', () => {
     vi.stubGlobal(
       'AudioContext',
-      vi.fn().mockImplementation(class { constructor() { throw new Error('Not supported'); } }),
+      vi.fn().mockImplementation(() => { throw new Error('Not supported'); }),
     );
     const { result } = renderHook(() => useSound());
 
