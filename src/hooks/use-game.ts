@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { shuffleNewDeck, drawCard } from '../api/deck-api';
 import type { CardData } from '../api/deck-api';
 
@@ -54,6 +54,7 @@ export function computeProbability(drawnCards: CardData[]) {
 
 export function getSnapResult(current: CardData, previous: CardData | null): SnapResult {
   if (!previous) return null;
+  // VALUE match takes priority over SUIT when both match (e.g. multi-deck scenarios)
   if (current.value === previous.value) return 'VALUE';
   if (current.suit === previous.suit) return 'SUIT';
   return null;
@@ -100,12 +101,16 @@ export function useGame() {
     }
   }, []);
 
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   const draw = useCallback(async () => {
-    if (!state.deckId || state.gameOver || state.loading) return;
+    const { deckId, gameOver, loading } = stateRef.current;
+    if (!deckId || gameOver || loading) return;
 
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const res = await drawCard(state.deckId);
+      const res = await drawCard(deckId);
       const newCard = res.cards[0];
 
       setState((prev) => {
@@ -117,13 +122,13 @@ export function useGame() {
 
         return {
           ...prev,
-          previousCard: isGameOver ? newCard : prev.currentCard,
-          currentCard: isGameOver ? null : newCard,
+          previousCard: prev.currentCard,
+          currentCard: newCard,
           cardsDrawn: newCardsDrawn,
           drawnCards: newDrawnCards,
           valueMatches: prev.valueMatches + (snap === 'VALUE' ? 1 : 0),
           suitMatches: prev.suitMatches + (snap === 'SUIT' ? 1 : 0),
-          snapResult: snap,
+          snapResult: isGameOver ? null : snap,
           gameOver: isGameOver,
           loading: false,
         };
@@ -135,9 +140,12 @@ export function useGame() {
         error: 'Failed to draw card. Please try again.',
       }));
     }
-  }, [state.deckId, state.gameOver, state.loading]);
+  }, []);
 
-  const probability = computeProbability(state.drawnCards);
+  const probability = useMemo(
+    () => computeProbability(state.drawnCards),
+    [state.drawnCards],
+  );
 
   return {
     ...state,

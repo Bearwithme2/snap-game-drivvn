@@ -3,12 +3,12 @@ import { useCallback, useRef } from 'react';
 export function useSound() {
   const ctxRef = useRef<AudioContext | null>(null);
 
-  const getCtx = useCallback(() => {
+  const getCtx = () => {
     if (!ctxRef.current) {
       ctxRef.current = new AudioContext();
     }
     return ctxRef.current;
-  }, []);
+  };
 
   const playDraw = useCallback(() => {
     try {
@@ -26,7 +26,7 @@ export function useSound() {
     } catch {
       // Audio not available (e.g. test environment)
     }
-  }, [getCtx]);
+  }, []);
 
   const playSnap = useCallback(() => {
     try {
@@ -48,7 +48,7 @@ export function useSound() {
     } catch {
       // Audio not available
     }
-  }, [getCtx]);
+  }, []);
 
   return { playDraw, playSnap };
 }

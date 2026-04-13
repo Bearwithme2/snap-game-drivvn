@@ -25,11 +25,16 @@ export interface DrawResponse {
 export async function shuffleNewDeck(): Promise<DeckResponse> {
   const res = await fetch(`${BASE_URL}/new/shuffle/?deck_count=1`);
   if (!res.ok) throw new Error('Failed to shuffle new deck');
-  return await res.json() as DeckResponse;
+  const data = await res.json() as DeckResponse;
+  if (!data.success) throw new Error('Failed to shuffle new deck');
+  return data;
 }
 
 export async function drawCard(deckId: string): Promise<DrawResponse> {
   const res = await fetch(`${BASE_URL}/${deckId}/draw/?count=1`);
   if (!res.ok) throw new Error('Failed to draw card');
-  return await res.json() as DrawResponse;
+  const data = await res.json() as DrawResponse;
+  if (!data.success) throw new Error('Failed to draw card');
+  if (!data.cards.length) throw new Error('No cards returned');
+  return data;
 }

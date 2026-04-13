@@ -30,7 +30,14 @@ export function App() {
     <div className={styles.app}>
       <h1 className={styles.title}>SNAP!</h1>
 
-      {game.error && <p className={styles.error}>{game.error}</p>}
+      {game.error && (
+        <div className={styles.error}>
+          <p>{game.error}</p>
+          {!game.deckId && (
+            <DrawButton label="Retry" onClick={game.startGame} disabled={game.loading} />
+          )}
+        </div>
+      )}
 
       <SnapMessage key={game.cardsDrawn} snapResult={game.snapResult} />
 
