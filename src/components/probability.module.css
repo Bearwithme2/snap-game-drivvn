@@ -1,0 +1,9 @@
+.probability {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.probability p {
+  margin: 0.125rem 0;
+}
